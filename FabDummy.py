@@ -40,7 +40,7 @@ def dummy_ensemble(config="dummy_test",**args):
     sweep_dir = path_to_config + "/SWEEP"
     env.script = 'dummy'
     env.input_name_in_config = 'dummy.txt'
-
+    with_config(config)
     run_ensemble(config, sweep_dir, **args)
     
 @task
