@@ -5,7 +5,7 @@
 #
 # This file contains FabSim definitions specific to FabDummy.
 
-from base.fab import *
+from fabsim.base.fab import *
 
 # Add local script, blackbox and template path.
 add_local_paths("FabDummy")
