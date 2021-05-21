@@ -5,13 +5,17 @@
 #
 # This file contains FabSim definitions specific to FabDummy.
 
-from fabsim.base.fab import *
+try:
+    from fabsim.base.fab import *
+except ImportError:
+    from base.fab import *
 
 # Add local script, blackbox and template path.
 add_local_paths("FabDummy")
 
+
 @task
-def dummy(config,**args):
+def dummy(config, **args):
     """Submit a Dummy job to the remote queue.
     The job results will be stored with a name pattern as defined in the environment,
     e.g. cylinder-abcd1234-legion-256
@@ -25,16 +29,17 @@ def dummy(config,**args):
     """
     update_environment(args)
     with_config(config)
-    execute(put_configs,config)
-    job(dict(script='dummy', wall_time='0:15:0', memory='2G'),args)
+    execute(put_configs, config)
+    job(dict(script='dummy', wall_time='0:15:0', memory='2G'), args)
+
 
 @task
-def dummy_ensemble(config="dummy_test",**args):
+def dummy_ensemble(config="dummy_test", **args):
     """
     Submits an ensemble of dummy jobs.
     One job is run for each file in <config_file_directory>/dummy_test/SWEEP.
     """
-    
+
     path_to_config = find_config_file_path(config)
     print("local config file path at: %s" % path_to_config)
     sweep_dir = path_to_config + "/SWEEP"
@@ -42,9 +47,10 @@ def dummy_ensemble(config="dummy_test",**args):
     env.input_name_in_config = 'dummy.txt'
     with_config(config)
     run_ensemble(config, sweep_dir, **args)
-    
+
+
 @task
-def lammps_dummy(config,**args):
+def lammps_dummy(config, **args):
     """Submit a LAMMPS job to the remote queue.
     The job results will be stored with a name pattern as defined in the environment,
     e.g. cylinder-abcd1234-legion-256
@@ -57,5 +63,5 @@ def lammps_dummy(config,**args):
             memory : memory per node
     """
     with_config(config)
-    execute(put_configs,config)
-    job(dict(script='lammps', wall_time = '0:15:0', lammps_input = "in.CG.lammps"),args)
+    execute(put_configs, config)
+    job(dict(script='lammps', wall_time='0:15:0', lammps_input="in.CG.lammps"), args)
