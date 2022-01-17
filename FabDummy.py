@@ -7,6 +7,7 @@
 
 try:
     from fabsim.base.fab import *
+    from fabsim.VVP import vvp
 except ImportError:
     from base.fab import *
 
@@ -65,3 +66,58 @@ def lammps_dummy(config, **args):
     with_config(config)
     execute(put_configs, config)
     job(dict(script='lammps', wall_time='0:15:0', lammps_input="in.CG.lammps"), args)
+
+
+def compare_dummy_results(results_dir, sif_dir, verbose=True, **kwargs):
+    if verbose:
+        print("COMPARE DUMMY RESULTS")
+        print("test subject source: {}/out.txt".format(results_dir))
+        print("SIF source: {}/out.txt".format(sif_dir))
+
+    out_rf = open("{}/out.txt".format(results_dir),'r')
+    out_sf = open("{}/out.txt".format(sif_dir),'r')
+    
+    rf_content = out_rf.readlines()
+    sf_content = out_sf.readlines()
+
+    rf = 0.0
+    sf = 0.000001
+    for l in rf_content:
+        rf = float(l)
+
+    for l in sf_content:
+        sf = float(l)
+
+    if verbose:
+        print("VVP test subject result {}, VVP stable intermediate formresult {}".format(rf,sf))
+
+    return(abs(rf-sf)/sf)
+
+
+def dummy_avg(scores, **kwargs):
+  return scores
+
+
+@task
+def dummy_sif(config, testing_template='dummy_to_be_tested', skip_runs=False, **args):
+
+  with_config(config)
+  execute(put_configs, config)
+  job(dict(script='dummy_sif', label='sif', wall_time='0:15:0'), args)
+  job(dict(script=testing_template, label='test_subject', wall_time='0:15:0'), args)
+
+  # if not run locally, wait for runs to complete
+  update_environment()
+  if env.host != "localhost":
+    wait_complete("")
+  if skip_runs:
+    env.config = "validation"
+
+  fetch_results()
+
+  results_dir = template(env.job_name_template)
+  print(results_dir)
+
+  scores = vvp.sif_vvp("{}/test_subject_{}".format(env.local_results, results_dir), "{}/sif_{}".format(env.local_results, results_dir), compare_dummy_results, dummy_avg)
+
+  print("SCORES:",scores)
