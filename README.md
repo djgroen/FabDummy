@@ -59,5 +59,5 @@ Replicas are jobs that have identical inputs and configurations. Their outputs m
 
 FabDummy contains a minimal demonstrator script of VECMA VVP 2, which compares a candidate code version output with that of a stable intermediate form. You can run this little demonstrator by typing:
 
-`fabsim localhost dummy\_sif:dummy\_test`
+`fabsim localhost dummy_sif:dummy_test`
 
