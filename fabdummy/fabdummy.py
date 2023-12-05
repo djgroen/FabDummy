@@ -23,8 +23,6 @@ def dummy(config, **args):
     config : config directory to use to define input files, e.g. config=cylinder
     Keyword arguments:
             cores : number of compute cores to request
-            images : number of images to take
-            steering : steering session i.d.
             wall_time : wall-time job limit
             memory : memory per node
     """
@@ -58,8 +56,6 @@ def lammps_dummy(config, **args):
     config : config directory to use to define geometry, e.g. config=lamps_lj_liquid
     Keyword arguments:
             cores : number of compute cores to request
-            images : number of images to take
-            steering : steering session i.d.
             wall_time : wall-time job limit
             memory : memory per node
     """
