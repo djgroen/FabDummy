@@ -1,0 +1,25 @@
+[project]
+name = "FabDummy"
+version = "0.0.1"
+authors = [
+  { name="Derek Groen", email="derek.groen@brunel.ac.uk" },
+]
+description = "An example/demonstrator plugin for the FabSim3 automation tool."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/djgroen/FabDummy"
+Issues = "https://github.com/djgroen/FabDummy/issues"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["fabdummy"]
