@@ -102,3 +102,7 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# FabSim ignore list
+localhost_exe
+results

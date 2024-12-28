@@ -5,17 +5,14 @@
 #
 # This file contains FabSim definitions specific to FabDummy.
 
-try:
-    from fabsim.base.fab import *
-    from fabsim.VVP import vvp
-except ImportError:
-    from base.fab import *
+from fabsim.base.environment_manager import env
+from fabsim.base.job_manager import job_manager
+from fabsim.deploy.templates import template
+from fabsim.VVP import vvp
+from fabsim.base.decorators import ptask
+from fabsim.base.manage_remote_job import wait_complete
 
-# Add local script, blackbox and template path.
-add_local_paths("FabDummy")
-
-
-@task
+@ptask
 def dummy(config, **args):
     """Submit a Dummy job to the remote queue.
     The job results will be stored with a name pattern as defined in the environment,
@@ -28,44 +25,26 @@ def dummy(config, **args):
             wall_time : wall-time job limit
             memory : memory per node
     """
-    update_environment(args)
-    with_config(config)
-    execute(put_configs, config)
-    job(dict(script='dummy', job_wall_time='0:15:0', memory='2G'), args)
+    env.update(args)
+    job_manager.set_config(config)
+    job_manager.transfer_config_files(config)
+    job_manager.job(dict(script='dummy', job_wall_time='0:15:0', memory='2G'), args)
 
 
-@task
+@ptask
 def dummy_ensemble(config="dummy_test", **args):
     """
     Submits an ensemble of dummy jobs.
     One job is run for each file in <config_file_directory>/dummy_test/SWEEP.
     """
 
-    path_to_config = find_config_file_path(config)
+    path_to_config = job_manager.get_config_file_path(config)
     print("local config file path at: %s" % path_to_config)
     sweep_dir = path_to_config + "/SWEEP"
     env.script = 'dummy'
     env.input_name_in_config = 'dummy.txt'
-    with_config(config)
-    run_ensemble(config, sweep_dir, **args)
-
-
-@task
-def lammps_dummy(config, **args):
-    """Submit a LAMMPS job to the remote queue.
-    The job results will be stored with a name pattern as defined in the environment,
-    e.g. cylinder-abcd1234-legion-256
-    config : config directory to use to define geometry, e.g. config=lamps_lj_liquid
-    Keyword arguments:
-            cores : number of compute cores to request
-            images : number of images to take
-            steering : steering session i.d.
-            wall_time : wall-time job limit
-            memory : memory per node
-    """
-    with_config(config)
-    execute(put_configs, config)
-    job(dict(script='lammps', wall_time='0:15:0', lammps_input="in.CG.lammps"), args)
+    job_manager.set_config(config)
+    job_manager.run_ensemble(config, sweep_dir, **args)
 
 
 def compare_dummy_results(results_dir, sif_dir, verbose=True, **kwargs):
@@ -76,7 +55,7 @@ def compare_dummy_results(results_dir, sif_dir, verbose=True, **kwargs):
 
     out_rf = open("{}/out.txt".format(results_dir),'r')
     out_sf = open("{}/out.txt".format(sif_dir),'r')
-    
+
     rf_content = out_rf.readlines()
     sf_content = out_sf.readlines()
 
@@ -98,22 +77,21 @@ def dummy_avg(scores, **kwargs):
   return scores
 
 
-@task
+@ptask
 def dummy_sif(config, testing_template='dummy_to_be_tested', skip_runs=False, **args):
 
-  with_config(config)
-  execute(put_configs, config)
-  job(dict(script='dummy_sif', label='sif', wall_time='0:15:0'), args)
-  job(dict(script=testing_template, label='test_subject', wall_time='0:15:0'), args)
+  job_manager.set_config(config)
+  job_manager.transfer_config_files(config)
+  job_manager.job(dict(script='dummy_sif', label='sif', wall_time='0:15:0'), args)
+  job_manager.job(dict(script=testing_template, label='test_subject', wall_time='0:15:0'), args)
 
   # if not run locally, wait for runs to complete
-  update_environment()
   if env.host != "localhost":
     wait_complete("")
   if skip_runs:
     env.config = "validation"
 
-  fetch_results()
+  job_manager.fetch_results()
 
   results_dir = template(env.job_name_template)
   print(results_dir)
@@ -123,9 +101,8 @@ def dummy_sif(config, testing_template='dummy_to_be_tested', skip_runs=False, **
   print("SCORES:",scores)
 
 
-@task
+@ptask
 def print_dummy_output(results_dir):
-    update_environment()
     # Open the file in read mode
     file_path = f"{env.local_results}/{results_dir}/out.txt"
     print(file_path)
